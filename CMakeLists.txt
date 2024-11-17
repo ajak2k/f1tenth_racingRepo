@@ -7,12 +7,25 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(ackermann_msgs REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(rclpy REQUIRED)
 
 #include the cpp 'include' DIRECTORY
 include_directories(include)
+
+# Add C++ executables
+add_executable(saftey_node src/saftey_node.cpp)
+ament_target_dependencies(saftey_node rclcpp sensor_msgs nav_msgs ackermann_msgs)
+
+#install the cpp executables
+install(TARGETS 
+        saftey_node
+        DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
