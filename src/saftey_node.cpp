@@ -77,8 +77,9 @@ public:
 
 private:
     //Declaration of Member Variables
-    float iTTC_Threshold = 1.0;
-    float brake_accel = -0.5;
+    /// TODO: Update this to move the constant values to a config file
+    float iTTC_Threshold = 0.45;
+    float brake_accel = -10.0;
     Odometry CarPose;
 
     //pubs and subs and timers
@@ -107,10 +108,10 @@ private:
     {
         //set initial ttc to infinity(or here the max of a float)
         float iTTC = std::numeric_limits<float>::infinity();
+        /// TODO: What is we only 'look forward'(restric the lidar range to less than min to max) to improve performance in narrow tracks?
         float ScanAngle = lidar_scan->angle_min;
         float relativeSpeed = 0.0;
 
-        /// TODO: calculate TTC
         for (long unsigned int i=0; i<lidar_scan->ranges.size(); i++)
         {
             if (lidar_scan->ranges[i]>0.0) //reject junk range values
