@@ -16,15 +16,27 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 
 #include the cpp 'include' DIRECTORY
-include_directories(include)
+include_directories(include/formulazot)
+
+# Add the utility source file
+add_library(utils src/utils.cpp)
+ament_target_dependencies(utils rclcpp ackermann_msgs)
 
 # Add C++ executables
 add_executable(saftey_node src/saftey_node.cpp)
 ament_target_dependencies(saftey_node rclcpp sensor_msgs nav_msgs ackermann_msgs)
+target_link_libraries(saftey_node utils)
+
+add_executable(wall_follower src/wall_follower.cpp)
+ament_target_dependencies(wall_follower rclcpp sensor_msgs nav_msgs ackermann_msgs)
+target_link_libraries(wall_follower utils)
+
 
 #install the cpp executables
 install(TARGETS 
         saftey_node
+        wall_follower
+        utils
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

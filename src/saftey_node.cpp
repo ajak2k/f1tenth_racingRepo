@@ -21,6 +21,7 @@ limitations under the License.
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
+#include "utils.hpp"
 
 #include <cmath>
 #include <limits>
@@ -60,19 +61,6 @@ public:
 
         //Publisher to the car drive topic
         drive_publisher = this->create_publisher<AckermannDriveStamped>("drive", 10);
-    }
-    //generate a stamped message for the drive based on the given speed, accerelation, steering
-    static AckermannDriveStamped drive_message(float speed = 0.0, float acceleration = 0.0, float steering_angle = 0.0 )
-    {
-    AckermannDriveStamped msg;
-    msg.header.stamp = rclcpp::Clock().now();
-    msg.header.frame_id = "base_link";
-    msg.drive.steering_angle = tan(steering_angle)/0.5 * speed;//L approximately 0.5m for the F1tenth car;
-    msg.drive.steering_angle_velocity = 0.0;
-    msg.drive.speed = speed;
-    msg.drive.acceleration = acceleration;
-    msg.drive.jerk = 0.0;
-    return msg;
     }
 
 private:
