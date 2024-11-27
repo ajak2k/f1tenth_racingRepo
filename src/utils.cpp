@@ -19,9 +19,18 @@ limitations under the License.
 #include "rclcpp/rclcpp.hpp"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
 
-//Generate a stamped message for the drive based on the given speed, accerelation, steering
-    ackermann_msgs::msg::AckermannDriveStamped drive_message(float speed = 0.0, float acceleration = 0.0, float steering_angle = 0.0 )
-    {
+ackermann_msgs::msg::AckermannDriveStamped drive_message(float speed = 0.0, float acceleration = 0.0, float steering_angle = 0.0 )
+{
+    /*
+    Based on the desired speed, acceleration and streeing angle create a stamped ackermann drive message.
+    Sets the desired streeing angle instantly with no ramp, sets the frame_id to base link
+    Args:
+        speed:           desired linear velocity
+        acceleration:    desired linear acceleration
+        streering_angle: desired streering angle
+    Returns:
+        msg: the stamped ackermann drive message
+    */
     ackermann_msgs::msg::AckermannDriveStamped msg;
     msg.header.stamp = rclcpp::Clock().now();
     msg.header.frame_id = "base_link";
@@ -31,4 +40,4 @@ limitations under the License.
     msg.drive.acceleration = acceleration;
     msg.drive.jerk = 0.0;
     return msg;
-    }
+}
