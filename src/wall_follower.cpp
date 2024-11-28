@@ -17,14 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "rclcpp/rclcpp.hpp"
 #include <string>
 #include <cmath>
+#include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
-
 #include "utils.hpp"
+
+constexpr double DEG_TO_RAD = M_PI / 180.0; // Conversion factor for degrees to radians
 
 class WallFollow : public rclcpp::Node {
 
@@ -43,29 +44,33 @@ private:
     ///TODO: change the PID parameters to tunable parameters read from a params file
     // PID CONTROL PARAMS
     double kp = 3.0;
-    double kd = 0.1;
-    double ki = 0.0;
+    double kd = 1.0;
+    double ki = 0.1;
+
+    double error = 0.0;
     double prev_error = 0.0;
     double integral_error = 0.0;
     double derivative_error = 0.0;
+    
     double t_0 = -1.0;
     double t = 0.0;
     double t_minus_1 = 0.0;
 
     //Velocity limits
-    double max_velocity = 1.5;
-    double mid_velocity = 1.0;
+    double max_velocity = 5.0;
+    double mid_velocity = 2.5;
     double min_velocity = 0.5;
-    double acceleration = 0.0;
+    //double acceleration = 0.0;
 
     //wall follow parameters
     double L = 1.5; //look ahead distance; remember car length is 0.5m
     double distance_setpoint = 1.0; //desired dist from the wall
     //assume angle of the car is = 0 if heading is straight ahead
-    //all angles specified in degrees and then converted to radians, degree * 0.0174533 = radians
-    double theta = 0.0174533 * 40; //angle between beams a and b
-    double b_angle = 0.0174533 * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
-    double a_angle = 0.0174533 * (-90 +40); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+    
 
     // Topics
     std::string lidarscan_topic = "/scan";
@@ -88,17 +93,17 @@ private:
             range: range measurement in meters at the given angle
         */
         //double range = 0.0;
-        angle = std::floor((angle - scan_msg->angle_min) / scan_msg->angle_increment); //convert to the closest index value
+        assert(angle >= scan_msg->angle_min && angle <= scan_msg->angle_max); // Angle must be within range
+        int i = std::floor((angle - scan_msg->angle_min) / scan_msg->angle_increment); //convert to the closest index value
         
-        // if (scan_msg->ranges[angle] ==  'inf')
-        //     return scan_msg->range_max;
-        // else if (scan_msg->ranges[angle] == 'NaN')
-        //         return scan_msg->range_min;
-        //     else
-        return scan_msg->ranges[angle];
+        //Handle NaN and inf values for the range and retun the max range
+        if (std::isnan(scan_msg->ranges[i]) || scan_msg->ranges[i] > scan_msg->range_max)
+            return scan_msg->range_max;
+        else
+            return scan_msg->ranges[i];
     }
 
-    double get_error(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_msg, double dist)
+    void get_error(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_msg, double dist_sp)
     {
         /*
         Calculates the error to the wall. Follow the wall to the left (going counter clockwise in the Levine loop). You potentially will need to use get_range()
@@ -108,56 +113,52 @@ private:
             dist: desired distance to the wall
 
         Returns:
-            error: calculated error
+            NA
         */
         
-        //dist of the lidar along horizontal axis plus theta
+        //a = dist of the lidar along horizontal axis plus theta
+        //b = dist of lidar along the car's horizontal axis
+        //alpha = the heading of the car alpha using the two distances a and b
+        //D_t = Current dist from wall
+        //D_t+1 = distance from the wall at a look ahead distance of L
         double a = get_range(scan_msg, a_angle);
-        //dist of lidar along the car's horizontal axis
         double b = get_range(scan_msg, b_angle);
-        //calculate the heading of the car alpha using the two distances a and b
         double alpha = atan2(a * cos(theta) - b, a * sin(theta));
-        //Current dist D_t from wall
         double D_t = b * cos(alpha);
-        //dist D_t+1 from the wall at a look ahead distance of L
         double D_t_plus_1 = D_t + L * sin(alpha);
-
+        //update global error variables
+        this -> prev_error = this->error;
+        this -> error = dist_sp - D_t_plus_1;
+        this -> integral_error += this->error;
         //update time parameters
         this->t_minus_1 = this->t;
-        this->t = (double)scan_msg->header.stamp.nanosec * (double)0.000000001 + (double)10e-9 + (double) scan_msg->header.stamp.sec;
-        if (this->t_0 == 0.0) {
-            this->t_0 = this->t;
-        }
-
-        return (dist - D_t_plus_1);
+        this->t = (double)scan_msg->header.stamp.sec + 
+                  (double)scan_msg->header.stamp.nanosec * 1e-9;
+        if (this->t_0 == -1.0) this->t_0 = this->t; //if it is the first run, set start time t_0 as the current time t
     }
 
-    double pid_control(double error)
+    double pid_control()
     {
         /*
         Based on the calculated error, publish vehicle control
 
         Args:
-            error: calculated error
+            N/A, uses all global variables
 
         Returns:
             angle: the estimated streeing angle
         */
-        double angle = 0.0;
-        //Calculate the errors and the steering angle
-        integral_error +=error;
-        derivative_error = (error - prev_error) / 0.1;
-        angle = kp*error + ki*integral_error*(this->t - this->t_0) + kd*derivative_error/(this->t - this->t_minus_1);
+        double delta_time = this->t - this->t_minus_1;
+        //Calculate the steering angle
+        double angle = this->kp * this->error + 
+                       this->ki * this->integral_error * delta_time + 
+                       this->kd * this->derivative_error / delta_time;
         //limit angle to +-30degrees as the car has that as the max limits
-        if (angle<(-30*0.0174533))
-            angle = -30*0.0174533;
-        else if (angle>(30*0.0174533))
-            angle = 30*0.0174533;
-        prev_error = error;
+        angle = std::clamp(angle, -30 * DEG_TO_RAD, 30 * DEG_TO_RAD);
         return angle;
     }
 
-    double velocity_limiter(double vel, double angle)
+    double velocity_limiter(double angle)
     {
         /*
         Based on the current required steering angle, limit the linear velocity
@@ -170,19 +171,16 @@ private:
             min(vel, upper_limit): a velocity that is bounded by the upper limit
         */
         ///TODO: change the angle limits to tunable parameters read from a params file
-        vel +=1;
-        if (fabs(angle) < (10.0*0.0174533)) {
-            RCLCPP_DEBUG(this->get_logger(), "Limited to max_Speed");
-            // return std::min(200, max_velocity);
+
+        if ((fabs(angle) > 0) && (fabs(angle) < (10.0*DEG_TO_RAD))) {
+            RCLCPP_DEBUG(this->get_logger(), "Set to max_Speed");
             return max_velocity;
-        }else if (fabs(angle) < (20.0*0.0174533)) {
-                RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed");
-                // return std::min(200, mid_velocity);
-                return mid_velocity;
+        }else if ((fabs(angle) > (10.0*DEG_TO_RAD)) && fabs(angle) < (20.0*DEG_TO_RAD)) {
+                  RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed");
+                  return mid_velocity;
                 } else {
-                    RCLCPP_DEBUG(this->get_logger(), "Limited to min_speed");
-                    // return std::min(200, min_velocity);
-                    return min_velocity;
+                        RCLCPP_DEBUG(this->get_logger(), "Limited to min_speed");
+                        return min_velocity;
                 }
     }
 
@@ -198,18 +196,20 @@ private:
             None
         */
         RCLCPP_DEBUG_ONCE(this->get_logger(), "Lidar Communication Established");
-        double error = get_error(scan_msg, distance_setpoint); 
+        get_error(scan_msg, distance_setpoint); 
         // Calcualte the desired steering with PID control
-        double steering_angle = pid_control(error);
+        double steering_angle = pid_control();
         //Calculate the velocity as a function of the streeing angle, high velocity for small steering angles
-        double velocity = max_velocity - (fabs(steering_angle)/30 * (max_velocity-min_velocity));
-        velocity = velocity_limiter(velocity, steering_angle); //set hard upper limits
+        double velocity = velocity_limiter(steering_angle);
         
         //Publish the desired drive message to the car over the drive_topic
-        RCLCPP_DEBUG(this->get_logger(), "Linear velocity: %f Steering Angle: %f", velocity, steering_angle);
+        RCLCPP_DEBUG(this->get_logger(), "Linear velocity: %f Steering Angle: %f \n", velocity, steering_angle);
         auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
-        drive_msg = drive_message(steering_angle, acceleration, velocity);
-        drive_publisher->publish(drive_msg);
+        ///TODO: this drive_message() is not working, need to investigate
+        //drive_msg = drive_message(steering_angle, acceleration, velocity);
+        drive_msg.drive.speed = velocity;
+        drive_msg.drive.steering_angle = steering_angle;
+        this->drive_publisher->publish(drive_msg);
     }
 
 };
