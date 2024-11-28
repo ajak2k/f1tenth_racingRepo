@@ -63,13 +63,9 @@ private:
     double distance_setpoint = 1.0; //desired dist from the wall
     //assume angle of the car is = 0 if heading is straight ahead
     //all angles specified in degrees and then converted to radians, degree * 0.0174533 = radians
-    double theta = 40; //angle between beams a and b
-    double b_angle = 90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
-    double a_angle = b_angle+theta; //angle of the beam that is theta degrees ahead of the x-axis of the car
-    // convert to radians
-    theta *= 0.0174533;
-    a_angle *= 0.0174533;
-    b_angle *= 0.0174533;
+    double theta = 0.0174533 * 40; //angle between beams a and b
+    double b_angle = 0.0174533 * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double a_angle = 0.0174533 * (-90 +40); //angle of the beam that is theta degrees ahead of the x-axis of the car
 
     // Topics
     std::string lidarscan_topic = "/scan";
@@ -126,6 +122,13 @@ private:
         //dist D_t+1 from the wall at a look ahead distance of L
         double D_t_plus_1 = D_t + L * sin(alpha);
 
+        //update time parameters
+        this->t_minus_1 = this->t;
+        this->t = (double)scan_msg->header.stamp.nanosec * (double)0.000000001 + (double)10e-9 + (double) scan_msg->header.stamp.sec;
+        if (this->t_0 == 0.0) {
+            this->t_0 = this->t;
+        }
+
         return (dist - D_t_plus_1);
     }
 
@@ -141,16 +144,15 @@ private:
             angle: the estimated streeing angle
         */
         double angle = 0.0;
+        //Calculate the errors and the steering angle
         integral_error +=error;
         derivative_error = (error - prev_error) / 0.1;
-        angle = kp*error + ki*integral_error + kd*derivative_error;
-
+        angle = kp*error + ki*integral_error*(this->t - this->t_0) + kd*derivative_error/(this->t - this->t_minus_1);
         //limit angle to +-30degrees as the car has that as the max limits
         if (angle<(-30*0.0174533))
             angle = -30*0.0174533;
         else if (angle>(30*0.0174533))
             angle = 30*0.0174533;
-
         prev_error = error;
         return angle;
     }
@@ -196,7 +198,6 @@ private:
             None
         */
         RCLCPP_DEBUG_ONCE(this->get_logger(), "Lidar Communication Established");
-        sampling_time = scan_msg->scan_time;
         double error = get_error(scan_msg, distance_setpoint); 
         // Calcualte the desired steering with PID control
         double steering_angle = pid_control(error);
