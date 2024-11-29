@@ -11,7 +11,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(ackermann_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 
@@ -19,24 +18,22 @@ find_package(rclpy REQUIRED)
 include_directories(include/formulazot)
 
 # Add the utility source file
-add_library(utils src/utils.cpp)
-ament_target_dependencies(utils rclcpp ackermann_msgs)
+#add_library(utils src/utils.cpp)
+#ament_target_dependencies(utils rclcpp)
 
 # Add C++ executables
-add_executable(saftey_node src/saftey_node.cpp)
-ament_target_dependencies(saftey_node rclcpp sensor_msgs nav_msgs ackermann_msgs)
-target_link_libraries(saftey_node utils)
+#add_executable(saftey_node src/saftey_node.cpp)
+#ament_target_dependencies(saftey_node rclcpp sensor_msgs nav_msgs)
+#target_link_libraries(saftey_node utils)
 
 add_executable(wall_follower src/wall_follower.cpp)
-ament_target_dependencies(wall_follower rclcpp sensor_msgs nav_msgs ackermann_msgs)
-target_link_libraries(wall_follower utils)
+ament_target_dependencies(wall_follower rclcpp sensor_msgs nav_msgs)
+target_link_libraries(wall_follower)
 
 
 #install the cpp executables
 install(TARGETS 
-        saftey_node
         wall_follower
-        utils
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

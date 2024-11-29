@@ -23,7 +23,7 @@ limitations under the License.
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "std_msgs/msg/float32.hpp"
-#include "utils.hpp"
+// #include "utils.hpp"
 
 constexpr double DEG_TO_RAD = M_PI / 180.0; // Conversion factor for degrees to radians
 
@@ -33,18 +33,20 @@ public:
     WallFollow() : Node("wall_follow_node")
     {
         RCLCPP_INFO(this->get_logger(), "Constructing wall_follow_node"); 
-        ///TODO: investigate Qos to set rate of sub and pub
+        //Define a QoS profile with depth of 1
+        auto Lidar_qos = rclcpp::SensorDataQoS();
+        auto qos = rclcpp::QoS(rclcpp::KeepLast(1));
         //Subscriptions to the car to get Lidar Data
-        scan_subscription = this->create_subscription<sensor_msgs::msg::LaserScan>(lidarscan_topic, 10, bind(&WallFollow::scan_callback, this, std::placeholders::_1));
+        scan_subscription = this->create_subscription<sensor_msgs::msg::LaserScan>(lidarscan_topic, Lidar_qos, bind(&WallFollow::scan_callback, this, std::placeholders::_1));
         //Publisher to the car drive topic
-        drive_speed_publisher = this->create_publisher<std_msgs::msg::Float32>(drive_speed_topic, 10);
-        drive_speed_publisher = this->create_publisher<std_msgs::msg::Float32>(drive_steering_topic, 10);
+        drive_speed_publisher = this->create_publisher<std_msgs::msg::Float32>(drive_speed_topic, qos);
+        drive_steering_publisher = this->create_publisher<std_msgs::msg::Float32>(drive_steering_topic, qos);
     }
 
 private:
     ///TODO: change the PID parameters to tunable parameters read from a params file
     // PID CONTROL PARAMS
-    double kp = 1.0;
+    double kp = 1.2;
     double kd = 1.0;
     double ki = 0.0;
 
@@ -58,16 +60,14 @@ private:
     double t_minus_1 = 0.0;
 
     //Velocity limits
-    double max_velocity = 7.5;
-    double mid_velocity = 5.0;
-    double mid_velocity2 = 2.0;
-    double mid_velocity3 = 1.5;
-    double min_velocity = 0.5;
+    double max_velocity = 0.18;
+    double mid_velocity = 0.10;
+    double min_velocity = 0.07;
     //double acceleration = 0.0;
 
     //wall follow parameters
     double L = 1.5; //look ahead distance; remember car length is 0.5m
-    double distance_setpoint = 1.0; //desired dist from the wall
+    double distance_setpoint = 0.8; //desired dist from the wall
     //assume angle of the car is = 0 if heading is straight ahead
     //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
     double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
@@ -180,14 +180,8 @@ private:
         if ((fabs(angle) > 0) && (fabs(angle) < (10.0*DEG_TO_RAD))) {
             RCLCPP_DEBUG(this->get_logger(), "Set to max_Speed");
             return max_velocity;
-        }else if ((fabs(angle) > (10.0*DEG_TO_RAD)) && fabs(angle) < (15.0*DEG_TO_RAD)) {
+        }else if ((fabs(angle) > (10.0*DEG_TO_RAD)) && fabs(angle) < (20.0*DEG_TO_RAD)) {
                   RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed");
-                  return mid_velocity;
-                } else if ((fabs(angle) > (15.0*DEG_TO_RAD)) && fabs(angle) < (20.0*DEG_TO_RAD)) {
-                  RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed2");
-                  return mid_velocity2;
-                } if ((fabs(angle) > (20.0*DEG_TO_RAD)) && fabs(angle) < (25.0*DEG_TO_RAD)) {
-                  RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed3");
                   return mid_velocity;
                 }else {
                         RCLCPP_DEBUG(this->get_logger(), "Limited to min_speed");
@@ -209,11 +203,11 @@ private:
         RCLCPP_DEBUG_ONCE(this->get_logger(), "Lidar Communication Established");
         get_error(scan_msg, distance_setpoint); 
         // Calcualte the desired steering with PID control
+        // Calculate the velocity as a function of the streeing angle, high velocity for small steering angles
         double steering_angle = pid_control();
-        //Calculate the velocity as a function of the streeing angle, high velocity for small steering angles
         double velocity = velocity_limiter(steering_angle);
         
-        //Publish the desired drive message to the car over the drive_topic
+        // Publish the desired drive message to the car over the drive_topic
         RCLCPP_DEBUG(this->get_logger(), "Linear velocity: %f Steering Angle: %f \n", velocity, steering_angle);
         auto drive_speed_msg = std_msgs::msg::Float32();
         auto drive_steering_msg = std_msgs::msg::Float32();
