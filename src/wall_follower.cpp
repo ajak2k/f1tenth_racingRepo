@@ -43,9 +43,9 @@ public:
 private:
     ///TODO: change the PID parameters to tunable parameters read from a params file
     // PID CONTROL PARAMS
-    double kp = 3.0;
+    double kp = 1.0;
     double kd = 1.0;
-    double ki = 0.1;
+    double ki = 0.0;
 
     double error = 0.0;
     double prev_error = 0.0;
@@ -57,8 +57,10 @@ private:
     double t_minus_1 = 0.0;
 
     //Velocity limits
-    double max_velocity = 5.0;
-    double mid_velocity = 2.5;
+    double max_velocity = 7.5;
+    double mid_velocity = 5.0;
+    double mid_velocity2 = 2.0;
+    double mid_velocity3 = 1.5;
     double min_velocity = 0.5;
     //double acceleration = 0.0;
 
@@ -175,10 +177,16 @@ private:
         if ((fabs(angle) > 0) && (fabs(angle) < (10.0*DEG_TO_RAD))) {
             RCLCPP_DEBUG(this->get_logger(), "Set to max_Speed");
             return max_velocity;
-        }else if ((fabs(angle) > (10.0*DEG_TO_RAD)) && fabs(angle) < (20.0*DEG_TO_RAD)) {
+        }else if ((fabs(angle) > (10.0*DEG_TO_RAD)) && fabs(angle) < (15.0*DEG_TO_RAD)) {
                   RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed");
                   return mid_velocity;
-                } else {
+                } else if ((fabs(angle) > (15.0*DEG_TO_RAD)) && fabs(angle) < (20.0*DEG_TO_RAD)) {
+                  RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed2");
+                  return mid_velocity2;
+                } if ((fabs(angle) > (20.0*DEG_TO_RAD)) && fabs(angle) < (25.0*DEG_TO_RAD)) {
+                  RCLCPP_DEBUG(this->get_logger(), "Limited to med_speed3");
+                  return mid_velocity;
+                }else {
                         RCLCPP_DEBUG(this->get_logger(), "Limited to min_speed");
                         return min_velocity;
                 }

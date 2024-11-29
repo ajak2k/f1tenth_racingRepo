@@ -66,7 +66,7 @@ public:
 private:
     //Declaration of Member Variables
     /// TODO: Update this to move the constant values to a config file
-    float iTTC_Threshold = 0.45;
+    float iTTC_Threshold = 0.35;
     float brake_accel = -10.0;
     Odometry CarPose;
 
