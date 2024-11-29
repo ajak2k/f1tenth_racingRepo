@@ -22,7 +22,7 @@ limitations under the License.
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
+#include "std_msgs/msg/float32.hpp"
 #include "utils.hpp"
 
 constexpr double DEG_TO_RAD = M_PI / 180.0; // Conversion factor for degrees to radians
@@ -37,7 +37,8 @@ public:
         //Subscriptions to the car to get Lidar Data
         scan_subscription = this->create_subscription<sensor_msgs::msg::LaserScan>(lidarscan_topic, 10, bind(&WallFollow::scan_callback, this, std::placeholders::_1));
         //Publisher to the car drive topic
-        drive_publisher = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(drive_topic, 10);
+        drive_speed_publisher = this->create_publisher<std_msgs::msg::Float32>(drive_speed_topic, 10);
+        drive_speed_publisher = this->create_publisher<std_msgs::msg::Float32>(drive_steering_topic, 10);
     }
 
 private:
@@ -75,12 +76,14 @@ private:
     
 
     // Topics
-    std::string lidarscan_topic = "/scan";
-    std::string drive_topic = "/drive";
+    std::string lidarscan_topic = "/autodrive/f1tenth_1/lidar";
+    std::string drive_speed_topic = "/autodrive/f1tenth_1/throttle_command";
+    std::string drive_steering_topic = "/autodrive/f1tenth_1/steering_command";
 
     //pubs and subs
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr  scan_subscription;
-    rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_publisher;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr drive_speed_publisher;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr drive_steering_publisher;
 
     double get_range(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_msg, double angle)
     {
@@ -212,12 +215,14 @@ private:
         
         //Publish the desired drive message to the car over the drive_topic
         RCLCPP_DEBUG(this->get_logger(), "Linear velocity: %f Steering Angle: %f \n", velocity, steering_angle);
-        auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
+        auto drive_speed_msg = std_msgs::msg::Float32();
+        auto drive_steering_msg = std_msgs::msg::Float32();
         ///TODO: this drive_message() is not working, need to investigate
         //drive_msg = drive_message(steering_angle, acceleration, velocity);
-        drive_msg.drive.speed = velocity;
-        drive_msg.drive.steering_angle = steering_angle;
-        this->drive_publisher->publish(drive_msg);
+        drive_speed_msg.data = velocity;
+        drive_steering_msg.data = steering_angle;
+        this->drive_steering_publisher->publish(drive_steering_msg);
+        this->drive_speed_publisher->publish(drive_speed_msg);
     }
 
 };
