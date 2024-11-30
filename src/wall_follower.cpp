@@ -46,10 +46,9 @@ public:
 private:
     ///TODO: change the PID parameters to tunable parameters read from a params file
     // PID CONTROL PARAMS
-    double kp = 1.2;
+    double kp = 1.15;
     double kd = 1.0;
     double ki = 0.0;
-
     double error = 0.0;
     double prev_error = 0.0;
     double integral_error = 0.0;
@@ -60,14 +59,14 @@ private:
     double t_minus_1 = 0.0;
 
     //Velocity limits
-    double max_velocity = 0.18;
-    double mid_velocity = 0.10;
-    double min_velocity = 0.07;
+    double max_velocity = 0.18; //0-10
+    double mid_velocity = 0.125; //10-20
+    double min_velocity = 0.085; //20-30
     //double acceleration = 0.0;
 
     //wall follow parameters
     double L = 1.5; //look ahead distance; remember car length is 0.5m
-    double distance_setpoint = 0.8; //desired dist from the wall
+    double distance_setpoint = 0.79; //desired dist from the wall
     //assume angle of the car is = 0 if heading is straight ahead
     //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
     double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car

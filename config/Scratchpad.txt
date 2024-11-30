@@ -1,0 +1,209 @@
+    Submission 1
+    // PID CONTROL PARAMS
+    double kp = 1.2;
+    double kd = 1.0;
+    double ki = 0.0;
+    
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.18; //0-10
+    double mid_velocity = 0.10; //10-20
+    double min_velocity = 0.07; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.8; //desired dist from the wall
+
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+
+Run2 best lap 10,0sec, collision count 0
+    // PID CONTROL PARAMS
+    double kp = 1.1;
+    double kd = 1.0;
+    double ki = 0.0;
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.18; //0-10
+    double mid_velocity = 0.12; //10-20
+    double min_velocity = 0.085; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.75; //desired dist from the wall
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+
+Run3 best lap 9,8 to 10,0 collision 0
+    ///TODO: change the PID parameters to tunable parameters read from a params file
+    // PID CONTROL PARAMS
+    double kp = 1.15;
+    double kd = 1.0;
+    double ki = 0.0;
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.18; //0-10
+    double mid_velocity = 0.12; //10-20
+    double min_velocity = 0.085; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.79; //desired dist from the wall
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+
+Run4 best about9.9, consistently below 10.5 0 collisions
+    // PID CONTROL PARAMS
+    double kp = 1.15;
+    double kd = 1.0;
+    double ki = 0.0;
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.18; //0-10
+    double mid_velocity = 0.125; //10-20
+    double min_velocity = 0.085; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.79; //desired dist from the wall
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+
+Run5 best 10,0 total 117,0
+ // PID CONTROL PARAMS
+    double kp = 1.15;
+    double kd = 1.0;
+    double ki = 0.0;
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.185; //0-10
+    double mid_velocity = 0.125; //10-20
+    double min_velocity = 0.085; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.79; //desired dist from the wall
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+    
+Run6 total 115 best 9.9 collision 1
+// PID CONTROL PARAMS
+    double kp = 1.15;
+    double kd = 1.0;
+    double ki = 0.0;
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.19; //0-10
+    double mid_velocity = 0.125; //10-20
+    double min_velocity = 0.09; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.79; //desired dist from the wall
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+    
+Run7 best 9.9 total 110 collision 1
+    // PID CONTROL PARAMS
+    double kp = 1.15;
+    double kd = 1.0;
+    double ki = 0.0;
+    double error = 0.0;
+    double prev_error = 0.0;
+    double integral_error = 0.0;
+    double derivative_error = 0.0;
+    
+    double t_0 = -1.0;
+    double t = 0.0;
+    double t_minus_1 = 0.0;
+
+    //Velocity limits
+    double max_velocity = 0.19; //0-10
+    double mid_velocity = 0.125; //10-20
+    double min_velocity = 0.08; //20-30
+    //double acceleration = 0.0;
+
+    //wall follow parameters
+    double L = 1.5; //look ahead distance; remember car length is 0.5m
+    double distance_setpoint = 0.79; //desired dist from the wall
+    //assume angle of the car is = 0 if heading is straight ahead
+    //all angles specified in degrees and then converted to radians, degree * DEG_TO_RAD = radians
+    double a_angle = DEG_TO_RAD * (-50); //angle of the beam that is theta degrees ahead of the x-axis of the car
+    double b_angle = DEG_TO_RAD * -90; //angle of the beam that is along the x-axis of the car. Set to +90 to follow right wall, set to -90 to follow left wall
+    double theta   = DEG_TO_RAD * 40; //angle b/w a and b
+    
+Run8 same parameters, total 120sec best 10.5 no collisions
+
+Run4 chosen as the final
