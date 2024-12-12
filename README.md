@@ -21,6 +21,7 @@ The **Formulazot** package focuses on enabling autonomous vehicle navigation and
 This package is used in the context of the **F1Tenth Autonomous Racing** framework.
 
 The associated docker container can be found at [ajak2k/formulazot_api](https://hub.docker.com/r/ajak2k/formulazot_api) on DockerHub
+
 ---
 
 ## Features
